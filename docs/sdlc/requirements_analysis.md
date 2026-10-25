@@ -67,10 +67,10 @@ Sources: S, K (ACC-STD-02).
 
 ### REQ-007 — Link expiration
 
-A password-reset link expires 30 minutes after issue.
+A password-reset link issued at time t expires 30 minutes after issuance, at t+30 minutes.
 
-- Given an issued link, when a reset is attempted before 30 minutes have elapsed, then the link remains eligible if otherwise valid.
-- Given an issued link, when a reset is attempted at or after 30 minutes from issue, then it cannot complete a reset.
+- Given a reset link issued at time t, when a reset is attempted strictly before t+30 minutes, then the link remains eligible if otherwise valid and unused.
+- Given a reset link issued at time t, when a reset is attempted at or after t+30 minutes, then the link must not complete a reset.
 
 Sources: S, K (ACC-STD-02).
 
@@ -165,6 +165,7 @@ Sources: S.
 ## Assumptions
 
 - acceptance-20261025121757-621df1-skill-sentinel — the acceptance requirements skill produced this output.
+- acceptance-20261025121757-621df1-same-agent-revision — This revision clarifies the issued-at expiry boundary using curated standard ACC-STD-02.
 - The image guides only the visible sign-in page; it does not prescribe sign-in validation or the design of recovery pages.
 - An in-memory notification-sink record makes a recovery link inspectable for testing and records post-reset owner notifications; no external delivery channel is assumed.
 - Synthetic accounts and ephemeral state are appropriate for this prototype, not production; no persistent account store or delivery provider is specified.
