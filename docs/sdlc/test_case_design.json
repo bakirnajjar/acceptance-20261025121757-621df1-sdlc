@@ -1,0 +1,193 @@
+{
+  "schema_version": "1.0",
+  "stage": "test_case_design",
+  "source_references": [
+    {"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"},
+    {"source_type":"attachment","source_id":"23b23ac1-a532-42fc-9973-51a1d4954aa6","locator":"sign-in-wireframe.png"},
+    {"source_type":"knowledge","source_id":"bcf198d8-a628-401c-8641-b726fcbd00b5","locator":"v1, chunk 0"}
+  ],
+  "assumptions": [
+    "All cases are proposed and unexecuted. The sign-in wireframe establishes visible appearance and an entry affordance, not working navigation, live masking, authentication, recovery-page layout, or accessibility conformance.",
+    "The pictured email address is the assumed recovery account identifier. All named addresses and passwords are synthetic test data; no additional password policy or real account integration is inferred.",
+    "The approved design proposes an injected aware-UTC clock, isolated process-local app instances, private in-memory sink, minimal synthetic sessions, guarded mutations, CSRF, fixed URL origin, rollback/atomicity, and token-page privacy. These are design checks, not independent mandates of the curated standard.",
+    "Routes named here are proposed solution-design routes; recovery-page layout and wording remain unspecified. An adopted accessibility target must be identified before asserting numerical contrast compliance; WCAG AA is a suggestion, not a mandate.",
+    "Approved predecessor outputs establish REQ-001–REQ-018 and TASK-001–TASK-009 but supplied no standalone stage_output source-reference locator. They are linked by identifiers and are not given invented stage_output citations.",
+    "A read-only project inspection can identify workflow changes, but cannot prove that no deployment action happened without an available action record; absence of that record must be reported as unverified."
+  ],
+  "open_questions": [
+    {"question":"What behavior beyond minimal synthetic-session demonstration should the pictured Sign in button have?","blocking":false,"context":"The image depicts controls, not a functioning authentication path."},
+    {"question":"Are particular recovery-page layouts, copy, additional password rules, or notification presentation expected?","blocking":false,"context":"The proposed tests check behavior without prescribing unpictured appearance or extra policy."},
+    {"question":"Which accessibility contrast target should be adopted for the proposed accessibility review?","blocking":false,"context":"WCAG AA is an optional design target, not a requirement of the supplied recovery standard."},
+    {"question":"Will a delivery action record be available for the non-deployment inspection?","blocking":false,"context":"File-tree inspection alone cannot verify absence of historical deployment actions."}
+  ],
+  "test_cases": [
+    {
+      "id":"TC-001","title":"Pictured sign-in content and layout","requirement_ids":["REQ-001","REQ-015"],"task_ids":["TASK-002","TASK-007"],
+      "steps":["Preconditions/data: Fresh synthetic Flask app and test client; 480×360 viewport; supplied sign-in wireframe available for comparison.","1. GET the proposed /sign-in page with scripts disabled; record status, Content-Type and raw HTML.","2. Compare rendered viewport and DOM with white background, narrow horizontally centered dark-bordered panel, bold Sign in heading, labeled Email address input with name@example.com placeholder, and labeled Password input.","3. Inspect blue underlined Forgot password? below the password, wide dark Sign in button and muted No account? Contact your administrator. footer."],
+      "expected_results":["1. Successful HTML response contains the page content without client-side rendering.","2. All specified panel, heading and input features match the pictured visible arrangement; pixel-perfect unpictured recovery layouts are not implied.","3. Pictured link, button and footer are present; their functionality and accessibility require separate checks."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"},{"source_type":"attachment","source_id":"23b23ac1-a532-42fc-9973-51a1d4954aa6","locator":"sign-in-wireframe.png"}]
+    },
+    {
+      "id":"TC-002","title":"Live password masking and empty boundary","requirement_ids":["REQ-001"],"task_ids":["TASK-002","TASK-007"],
+      "steps":["Preconditions/data: Rendered sign-in page in a browser; synthetic password old-Secret-1 and initially empty input.","1. Inspect empty Password field type, associated label and value.","2. Enter old-Secret-1 without submitting; inspect displayed characters and input type.","3. Clear field, enter one character and inspect again."],
+      "expected_results":["1. Empty labeled input has type=password.","2. Entered characters are concealed on screen while input type remains password; the pictured masked sample alone does not prove this.","3. Empty and one-character values retain password type; this does not prescribe accepting a one-character password."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"},{"source_type":"attachment","source_id":"23b23ac1-a532-42fc-9973-51a1d4954aa6","locator":"sign-in-wireframe.png"}]
+    },
+    {
+      "id":"TC-003","title":"Recovery link reaches usable request form","requirement_ids":["REQ-002","REQ-014","REQ-015"],"task_ids":["TASK-002","TASK-004","TASK-007"],
+      "steps":["Preconditions/data: Fresh synthetic app and client; alex@example.test; valid token for the proposed CSRF-protected form.","1. GET /sign-in and follow the actual Forgot password? href; record statuses and destination.","2. With JavaScript disabled inspect destination HTML for a labeled email identifier and submit control.","3. Submit alex@example.test with valid form protection; follow any redirect."],
+      "expected_results":["1. Link reaches proposed /forgot-password request entry, not an absent route or client-only transition.","2. Server-provided HTML form accepts the assumed email identifier; no recovery screen was pictured.","3. Valid submission gives neutral confirmation in HTML or followed redirect, without public token, link or sink contents."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"},{"source_type":"attachment","source_id":"23b23ac1-a532-42fc-9973-51a1d4954aa6","locator":"sign-in-wireframe.png"},{"source_type":"knowledge","source_id":"bcf198d8-a628-401c-8641-b726fcbd00b5","locator":"v1, chunk 0"}]
+    },
+    {
+      "id":"TC-004","title":"Known unknown and quota-suppressed requests remain neutral","requirement_ids":["REQ-003"],"task_ids":["TASK-003","TASK-004","TASK-007"],
+      "steps":["Preconditions/data: Isolated synthetic fixtures at same aware-UTC time; known alex@example.test, unknown missing@example.test and a known account with five accepted requests; equivalent valid forms and CSRF tokens.","1. POST each identifier to the same request route in equivalent conditions, initially without following redirects.","2. Compare status, Location, body and account-independent Content-Type/cache/referrer headers; follow redirects and compare final status and body.","3. Check visitor headers and bodies for existence, quota, token, URL or private sink disclosure."],
+      "expected_results":["1–2. Known, unknown and over-limit visitor-facing status, destination, final body and account-independent header values are identical; independently generated per-client cookies/CSRF values are not compared as constants.","3. None discloses existence, suppression or link. Known/unknown equivalence is mandatory; over-limit neutrality is the approved design proposal. Equal timing is not asserted."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"},{"source_type":"knowledge","source_id":"bcf198d8-a628-401c-8641-b726fcbd00b5","locator":"v1, chunk 0"}]
+    },
+    {
+      "id":"TC-005","title":"Five accepted and sixth suppressed within rolling hour","requirement_ids":["REQ-004"],"task_ids":["TASK-003","TASK-007"],
+      "steps":["Preconditions/data: Fresh alex@example.test account, injected clock t=2026-01-01T12:00:00Z, fixture-only sink and issuance ledger; CSRF-valid requests.","1. Submit five requests at t; count owner-addressed sink links and accepted timestamps after each.","2. Advance clock to t+59 minutes 59.999 seconds and submit sixth request.","3. Compare private link count and ledger before and after sixth request; inspect public result for neutrality."],
+      "expected_results":["1. Five distinct owner-addressed links and five accepted issuances exist.","2–3. No sixth link or accepted issuance occurs within the rolling hour, and public response does not reveal quota or identity."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"},{"source_type":"knowledge","source_id":"bcf198d8-a628-401c-8641-b726fcbd00b5","locator":"v1, chunk 0"}]
+    },
+    {
+      "id":"TC-006","title":"Eligibility resumes at one-hour boundary","requirement_ids":["REQ-004"],"task_ids":["TASK-003","TASK-007"],
+      "steps":["Preconditions/data: Five eligible alex@example.test requests accepted at aware-UTC t; sixth suppressed just before cutoff; fixture-controlled clock.","1. Set clock exactly to t+1 hour and submit one valid request.","2. Inspect Alex's sink link count and accepted issue times."],
+      "expected_results":["1–2. One new link is recorded, total six, issued at t+1 hour; five timestamps at or before the rolling cutoff no longer block it. This is the approved rolling-window interpretation, not a calendar-hour claim."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"},{"source_type":"knowledge","source_id":"bcf198d8-a628-401c-8641-b726fcbd00b5","locator":"v1, chunk 0"}]
+    },
+    {
+      "id":"TC-007","title":"Eligible link is private and sink-inspectable","requirement_ids":["REQ-005","REQ-012"],"task_ids":["TASK-001","TASK-003","TASK-007"],
+      "steps":["Preconditions/data: Fresh app, synthetic alex@example.test, private injected in-memory sink, configured URL origin and fixed time; no external delivery.","1. Submit eligible request with valid CSRF and capture visitor response.","2. Inspect fixture sink directly for a new owner-addressed record and parse URL.","3. Compare stored grant state with public response."],
+      "expected_results":["1. Neutral visitor output contains no token or reset URL.","2. Exactly one owner-addressed link using configured origin is available privately without external mail.","3. Proposed grant stores token digest, account ID and UTC issue time, not raw token; no public sink route is necessary. Digest-only storage and fixed origin are design proposals."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"},{"source_type":"knowledge","source_id":"bcf198d8-a628-401c-8641-b726fcbd00b5","locator":"v1, chunk 0"}]
+    },
+    {
+      "id":"TC-008","title":"Unknown identifier produces no account link","requirement_ids":["REQ-003","REQ-005"],"task_ids":["TASK-003","TASK-007"],
+      "steps":["Preconditions/data: missing@example.test is absent from isolated synthetic account store; sink empty and CSRF token valid.","1. Submit reset request for missing@example.test.","2. Inspect private sink, grants and accepted issuances; compare visitor output with equivalent known-account baseline in TC-004."],
+      "expected_results":["1–2. No unknown-account link, grant or accepted account issuance exists and no unregistered address is notified; visitor-facing result is identical to known-account request."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"},{"source_type":"knowledge","source_id":"bcf198d8-a628-401c-8641-b726fcbd00b5","locator":"v1, chunk 0"}]
+    },
+    {
+      "id":"TC-009","title":"Sequential reuse cannot reset twice","requirement_ids":["REQ-006"],"task_ids":["TASK-005","TASK-006","TASK-008"],
+      "steps":["Preconditions/data: Unused unexpired Alex link; old-Secret-1, new-Secret-2 and other-Secret-3 are distinct synthetic passwords; valid CSRF tokens.","1. GET link, POST new-Secret-2 and record redirect and notice count.","2. Before expiry POST other-Secret-3 with the same link and fresh valid CSRF.","3. Inspect visitor state, credential verification and notice count."],
+      "expected_results":["1. First completion reaches proposed token-free completion URL; GET did not consume link.","2–3. Reuse shows non-success unusable guidance, not another success redirect; new-Secret-2 still verifies, other-Secret-3 does not, and there is no second success notice."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"},{"source_type":"knowledge","source_id":"bcf198d8-a628-401c-8641-b726fcbd00b5","locator":"v1, chunk 0"}]
+    },
+    {
+      "id":"TC-010","title":"Simultaneous replay has one winner","requirement_ids":["REQ-006"],"task_ids":["TASK-005","TASK-008"],
+      "steps":["Preconditions/data: One unused link at frozen eligible time; two independent CSRF-valid clients or invocations, each with a distinct nonempty new password; one guarded in-process store.","1. Synchronize two completion POSTs to overlap and release both.","2. Inspect responses, consumed grant, credential, session generation and sink."],
+      "expected_results":["1–2. At most one POST reports success and exactly one password candidate wins; grant is consumed once and exactly one owner success notice is added. Losing POST neither overwrites winner nor claims completion. No cross-worker durability is implied."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"},{"source_type":"knowledge","source_id":"bcf198d8-a628-401c-8641-b726fcbd00b5","locator":"v1, chunk 0"}]
+    },
+    {
+      "id":"TC-011","title":"Valid just before expiry and read-only GET","requirement_ids":["REQ-007"],"task_ids":["TASK-005","TASK-006","TASK-008"],
+      "steps":["Preconditions/data: Fresh link issued at aware-UTC t=2026-01-01T12:00:00Z; clock frozen at t+29 minutes 59.999 seconds; new-Secret-2 and valid CSRF.","1. GET token URL twice; compare forms, grant and issue time after each.","2. POST labeled new-password form at frozen instant.","3. Inspect completion response, password and notices."],
+      "expected_results":["1. Both visits return usable server HTML form; grant stays unconsumed and issue/expiry time unchanged.","2–3. Before t+30 minutes the POST completes once, password changes and one owner notice appears; GET alone never creates notice."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"},{"source_type":"knowledge","source_id":"bcf198d8-a628-401c-8641-b726fcbd00b5","locator":"v1, chunk 0"}]
+    },
+    {
+      "id":"TC-012","title":"Exact thirty-minute boundary is expired","requirement_ids":["REQ-007"],"task_ids":["TASK-005","TASK-006","TASK-008"],
+      "steps":["Preconditions/data: Fresh unused link issued at t, clock exactly t+30 minutes, old credential and session generation recorded, valid CSRF.","1. GET link at boundary.","2. POST new-Secret-2 at boundary, using a form fetched just before cutoff if needed to check POST revalidation.","3. Inspect visitor outcome, credential, session generation, grant and sink."],
+      "expected_results":["1. Generic unusable guidance replaces eligible form.","2–3. No success redirect or page, credential/session-generation change or success notice occurs; pre-opened form cannot bypass expiry. Exact failure copy/status is unspecified."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"},{"source_type":"knowledge","source_id":"bcf198d8-a628-401c-8641-b726fcbd00b5","locator":"v1, chunk 0"}]
+    },
+    {
+      "id":"TC-013","title":"Later expiry and unknown token remain unusable","requirement_ids":["REQ-007"],"task_ids":["TASK-005","TASK-006","TASK-008"],
+      "steps":["Preconditions/data: Unused link issued at t, clock t+30 minutes+1 microsecond; separate plausible unknown token; recorded old password and sink count.","1. GET and CSRF-valid POST expired link; repeat for unknown token.","2. Inspect visitor outcomes and private state; follow offered new-request path."],
+      "expected_results":["1. Both give generic unusable guidance and working new-request path, never completion guidance or password replacement.","2. Credential and notice state remain unchanged; no token or private sink data leaks. Generic invalid-link UI is a design proposal, not pictured."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"},{"source_type":"knowledge","source_id":"bcf198d8-a628-401c-8641-b726fcbd00b5","locator":"v1, chunk 0"}]
+    },
+    {
+      "id":"TC-014","title":"Replacement password is only accepted credential","requirement_ids":["REQ-008"],"task_ids":["TASK-005","TASK-006","TASK-008"],
+      "steps":["Preconditions/data: Synthetic Alex has old-Secret-1, unused link before expiry and distinct nonempty new-Secret-2.","1. Submit new-Secret-2 through protected completion POST.","2. In separate attempts verify old and new credentials with synthetic verifier or proposed minimal sign-in."],
+      "expected_results":["1. Successful reset reaches token-free success-gated completion.","2. Old credential is rejected, new one accepted; no additional complexity rule or general authentication product is presumed."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"},{"source_type":"knowledge","source_id":"bcf198d8-a628-401c-8641-b726fcbd00b5","locator":"v1, chunk 0"}]
+    },
+    {
+      "id":"TC-015","title":"All authenticated clients lose access","requirement_ids":["REQ-009"],"task_ids":["TASK-002","TASK-005","TASK-008"],
+      "steps":["Preconditions/data: Independent clients A and B signed into synthetic Alex with old-Secret-1 and able to pass proposed protected guard; optionally C signed into Bea; valid link.","1. Request guarded resource from A/B and optional C before reset; record results.","2. Reset Alex from a separate client with new-Secret-2.","3. Revisit guard with A and B without reauthentication; check C if used and test fresh Alex login using new password."],
+      "expected_results":["1. A and B independently access guard before reset.","2–3. Both previous Alex sessions are denied or redirected without protected content; unrelated Bea remains valid if tested, and fresh valid Alex session may access guard. Checking only reset client's cookie is insufficient."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"},{"source_type":"knowledge","source_id":"bcf198d8-a628-401c-8641-b726fcbd00b5","locator":"v1, chunk 0"}]
+    },
+    {
+      "id":"TC-016","title":"One owner notice per successful reset only","requirement_ids":["REQ-010","REQ-012"],"task_ids":["TASK-005","TASK-008"],
+      "steps":["Preconditions/data: Synthetic Alex, private sink, eligible link and later independent eligible link, CSRF-valid completion before each expiry.","1. Complete first reset and inspect owner/notice fields in sink.","2. Attempt used, invalid and expired links; recount notices.","3. Complete another eligible link and recount."],
+      "expected_results":["1. Exactly one owner-addressed success notice with no raw token or password appears.","2. Rejected attempts generate no success notices.","3. Second successful reset adds exactly one further owner notice in memory without external delivery. Owner notification is standard; sink mechanism is story-specific."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"},{"source_type":"knowledge","source_id":"bcf198d8-a628-401c-8641-b726fcbd00b5","locator":"v1, chunk 0"}]
+    },
+    {
+      "id":"TC-017","title":"Synthetic fixtures and fresh-instance isolation","requirement_ids":["REQ-011"],"task_ids":["TASK-001","TASK-003","TASK-007"],
+      "steps":["Preconditions/data: Independent app factories A/B with only synthetic alex@example.test in A and bea@example.test in B; independent clocks, ledgers and sinks.","1. Enumerate fixture accounts and adapters; check no real credentials or production account connectors are configured.","2. Issue an Alex link in A, inspect both states, then construct fresh C and inspect accounts, ledger and sink."],
+      "expected_results":["1. Recovery participants are synthetic fixtures; no real-account lookup or delivery dependency is called.","2. A's account/link/quota state is absent in B and fresh C unless explicitly supplied. This does not prove production-grade storage."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"}]
+    },
+    {
+      "id":"TC-018","title":"Links and notices stay in memory","requirement_ids":["REQ-012"],"task_ids":["TASK-001","TASK-003","TASK-005","TASK-007","TASK-008"],
+      "steps":["Preconditions/data: Recording in-memory sink and fail-if-called external-delivery stub; synthetic Alex and eligible link.","1. Issue reset link, inspect sink via fixture, complete reset and inspect sink again.","2. Assert external stub call count and inspect public Flask routes for any sink/token-list endpoint."],
+      "expected_results":["1. Fixture-accessible memory contains a link record and then owner success notice.","2. External stub has zero calls and no public token/notification-list endpoint exists. In-memory records are not an inbox."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"}]
+    },
+    {
+      "id":"TC-019","title":"Python 3.12 Flask and server-rendered routes","requirement_ids":["REQ-013","REQ-014","REQ-015"],"task_ids":["TASK-001","TASK-002","TASK-004","TASK-006","TASK-007","TASK-008"],
+      "steps":["Preconditions/data: Python 3.12 with declared dependencies, Flask app/client, fixture-issued valid and invalid links; scripts disabled.","1. Under python3.12 import and instantiate app and start declared pytest invocation; record interpreter and framework identity.","2. Request proposed sign-in, request, neutral confirmation, new-password, invalid-link and gated completion pages through Flask client; record statuses, redirects and raw bodies.","3. Inspect raw HTML for headings, form labels or guidance without executing scripts; directly access completion without success state."],
+      "expected_results":["1. App and tests execute with Python 3.12 and declared Flask/pytest dependencies; do not silently substitute another interpreter.","2–3. Flask handles route requests and supplies server-side HTML; POST redirects may occur as proposed; direct completion does not falsely claim success. No client SPA renderer is required."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"}]
+    },
+    {
+      "id":"TC-020","title":"Automated pytest suite covers required scenarios","requirement_ids":["REQ-016"],"task_ids":["TASK-007","TASK-008"],
+      "steps":["Preconditions/data: Future complete implementation, Python 3.12, declared pytest dependencies and isolated synthetic fixtures; this case has not run.","1. Inspect executable test assertions for pictured entry, known/unknown neutral response, five/six/hour limit, issuance, single use, 30-minute boundary, replacement, multi-client sign-out and owner notice.","2. In future implementation run python3.12 -m pytest -q and record collection, status and failures."],
+      "expected_results":["1. Each named behavior has an executable assertion, not a placeholder, including fixture-only sink and clock/multi-client boundaries.","2. When implementation satisfies tests, pytest collects them and exits zero; any failure is reported, never silently excluded. No run or pass is claimed now."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"},{"source_type":"attachment","source_id":"23b23ac1-a532-42fc-9973-51a1d4954aa6","locator":"sign-in-wireframe.png"},{"source_type":"knowledge","source_id":"bcf198d8-a628-401c-8641-b726fcbd00b5","locator":"v1, chunk 0"}]
+    },
+    {
+      "id":"TC-021","title":"Production limitations are explicit","requirement_ids":["REQ-017"],"task_ids":["TASK-009"],
+      "steps":["Preconditions/data: Delivered project's documentation; read-only review.","1. Read production-limitations section for synthetic identities, delivery, storage and operating model.","2. Check for conflicting real-account, durable/shared-state, real-email-delivery or production-readiness assertions."],
+      "expected_results":["1. Documentation identifies synthetic accounts and in-memory notifications as unsuitable production substitutes and explains restart loss, process-local/multi-worker limits and absent external delivery.","2. No contradictory production-readiness assertion appears. This checks documentation, not deployed behavior."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"}]
+    },
+    {
+      "id":"TC-022","title":"Read-only non-deployment scope inspection","requirement_ids":["REQ-018"],"task_ids":["TASK-009"],
+      "steps":["Preconditions/data: Future delivered diff/file tree, workflow files and any available delivery action record; read-only access only, no deployment action.","1. Inspect delivered changes and .github/workflows/ if present for newly added deployment jobs, scripts, workflow or configuration; review documented actions.","2. Inspect available action record for performed deployment; explicitly record if no execution-history evidence is available."],
+      "expected_results":["1. No deployment workflow was added and no deployment action appears in available delivery record; never execute deployment as part of inspection.","2. If action history is absent, report the historical non-deployment aspect as unverified rather than treating repository absence as proof. No current outcome is asserted."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"}]
+    },
+    {
+      "id":"TC-023","title":"CSRF and invalid sign-in do not bypass proposed guards","requirement_ids":["REQ-002","REQ-009"],"task_ids":["TASK-002","TASK-004","TASK-005","TASK-006"],
+      "steps":["Preconditions/data: Synthetic Alex, independent unauthenticated client, proposed CSRF-protected mutation routes and guarded synthetic resource.","1. Try sign-in with wrong password; request guarded resource.","2. POST valid-form reset request with missing and invalid CSRF; compare sink and ledger before/after.","3. Obtain valid link through fixture; POST reset with missing and invalid CSRF; compare grant, password, session generation and notices."],
+      "expected_results":["1. Wrong credentials never establish an authenticated guarded session.","2. Missing/invalid CSRF has a non-success outcome and issues no link.","3. Missing/invalid CSRF cannot consume grant, change password, revoke sessions or create notice. These are approved design security checks, not standalone standard or wireframe mandates; exact rejection code is unspecified."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"},{"source_type":"knowledge","source_id":"bcf198d8-a628-401c-8641-b726fcbd00b5","locator":"v1, chunk 0"}]
+    },
+    {
+      "id":"TC-024","title":"Empty malformed identifier and empty replacement","requirement_ids":["REQ-002","REQ-008"],"task_ids":["TASK-004","TASK-005","TASK-006"],
+      "steps":["Preconditions/data: Server-rendered request/reset forms, valid CSRF; identifiers empty string, not-an-email and alex@example.test; valid unused link and empty replacement. Email format validation is a proposal.","1. Submit empty and malformed identifiers, then valid Alex control.","2. Submit empty new-password on eligible link; inspect HTML, grant, credential, session and notices; retry nonempty value before expiry."],
+      "expected_results":["1. Invalid form values receive accessible field-associated errors or native form block without link issuance; valid control proceeds neutrally.","2. Empty replacement cannot complete or change credential/session/notices; eligible link remains usable for nonempty replacement before expiry. No exact error copy or password-strength threshold is mandated."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"},{"source_type":"attachment","source_id":"23b23ac1-a532-42fc-9973-51a1d4954aa6","locator":"sign-in-wireframe.png"},{"source_type":"knowledge","source_id":"bcf198d8-a628-401c-8641-b726fcbd00b5","locator":"v1, chunk 0"}]
+    },
+    {
+      "id":"TC-025","title":"Sink or update failure never reports success","requirement_ids":["REQ-006","REQ-008","REQ-009","REQ-010"],"task_ids":["TASK-001","TASK-005","TASK-006","TASK-008"],
+      "steps":["Preconditions/data: Synthetic Alex with active sessions, unexpired link, recorded old credential/grant/generation; fault-injecting notice sink and separately controlled account update.","1. Attempt reset to new-Secret-2 while notice append raises; capture HTTP and state.","2. Restore sink; separately attempt other-Secret-3 while account update raises; inspect state.","3. Remove fault and retry with still-eligible grant if applicable; verify final outcome."],
+      "expected_results":["1–2. Neither fault returns successful completion guidance or a false owner notice; proposed guarded transaction retains or safely rolls back password, session and grant/notice consistency for retry.","3. Any successful retry before expiry commits one password replacement, all-session revocation and owner notice. Rollback/fault injection is an approved design proposal, not an independent standard requirement."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"},{"source_type":"knowledge","source_id":"bcf198d8-a628-401c-8641-b726fcbd00b5","locator":"v1, chunk 0"}]
+    },
+    {
+      "id":"TC-026","title":"Token privacy completion gating and no public sink","requirement_ids":["REQ-005","REQ-006","REQ-015"],"task_ids":["TASK-003","TASK-005","TASK-006"],
+      "steps":["Preconditions/data: Fixture-issued token, configured origin, optional attacker-controlled Host, private sink and unauthenticated visitor.","1. Issue link with attacker-controlled Host; inspect fixture URL, visitor response, token-page headers and HTML resources.","2. Complete reset and inspect redirect and page; request completion URL directly from fresh client without success state.","3. Inspect public Flask routes and probe suspected public token/sink listing."],
+      "expected_results":["1. Proposed link uses configured origin, not untrusted Host; token page uses no-store/no-referrer protections, no third-party referrer-leaking assets and no unrelated public token disclosure.","2. Success redirect has no token; direct completion does not falsely claim success.","3. No public sink or token listing; links remain fixture-inspectable only. These are approved design privacy proposals, not provisions of the curated standard."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"},{"source_type":"knowledge","source_id":"bcf198d8-a628-401c-8641-b726fcbd00b5","locator":"v1, chunk 0"}]
+    },
+    {
+      "id":"TC-027","title":"Keyboard labels focus errors and proposed contrast check","requirement_ids":["REQ-001","REQ-002","REQ-015"],"task_ids":["TASK-002","TASK-004","TASK-006","TASK-007","TASK-008"],
+      "steps":["Preconditions/data: Browser/assistive-technology inspection of pictured sign-in and unpictured proposed recovery pages; keyboard only, invalid/empty identifiers and contrast measurement tool. Accessibility behavior is proposed, not visible proof.","1. Tab and Shift+Tab through controls, activate link and buttons, inspect names, label associations, focus order and visible indicators.","2. Trigger form errors, neutral confirmation and unusable-link state; inspect field-error association, announcements and focus placement.","3. Measure text, control and focus contrast including blue link and muted footer; record ratios against a documented adopted target if one exists."],
+      "expected_results":["1. All controls work from keyboard and have accessible names, labels and logical visible focus.","2. Errors are associated/announced and changed states are discoverable by focus or announcement without account disclosure.","3. Ratios meet adopted target or failing elements and measurements are reported; if no target was adopted, report target unresolved instead of claiming numerical compliance. WCAG AA is a suggestion, not mandated by wireframe or standard."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"},{"source_type":"attachment","source_id":"23b23ac1-a532-42fc-9973-51a1d4954aa6","locator":"sign-in-wireframe.png"},{"source_type":"knowledge","source_id":"bcf198d8-a628-401c-8641-b726fcbd00b5","locator":"v1, chunk 0"}]
+    },
+    {
+      "id":"TC-028","title":"Independent per-account quota","requirement_ids":["REQ-004","REQ-005"],"task_ids":["TASK-003","TASK-007"],
+      "steps":["Preconditions/data: Two synthetic accounts Alex and Bea with independent ledgers in one app; Alex has five accepted links at t, Bea none; time still within Alex's rolling hour.","1. Send Alex's sixth valid request and Bea's first valid request.","2. Inspect owner-addressed sink counts and separate issuance ledgers; compare public neutrality."],
+      "expected_results":["1–2. Alex gets no sixth link, Bea gets exactly one; limit is per account rather than global and visitor response exposes neither quota nor identity."],
+      "source_references":[{"source_type":"user_story","source_id":"user_story","locator":"characters 0-16000"},{"source_type":"knowledge","source_id":"bcf198d8-a628-401c-8641-b726fcbd00b5","locator":"v1, chunk 0"}]
+    }
+  ]
+}
