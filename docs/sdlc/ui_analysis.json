@@ -1,0 +1,264 @@
+{
+  "schema_version": "1.0",
+  "source_references": [
+    {
+      "source_type": "attachment",
+      "source_id": "23b23ac1-a532-42fc-9973-51a1d4954aa6",
+      "locator": "sign-in-wireframe.png"
+    },
+    {
+      "source_type": "user_story",
+      "source_id": "user_story",
+      "locator": "characters 0-16000"
+    },
+    {
+      "source_type": "knowledge",
+      "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5",
+      "locator": "v1, chunk 0"
+    }
+  ],
+  "assumptions": [
+    "The pictured sign-in email address is the account identifier for the proposed reset-request form; no separate recovery identifier is specified.",
+    "The wireframe establishes appearance and affordances only, not implemented navigation, authentication, validation, masking semantics, accessibility behavior, or recovery pages.",
+    "Recovery-screen layout, copy, and routes are not prescribed. The proposed screens and states are design suggestions, not observed implementation.",
+    "Synthetic accounts and an in-memory notification sink provide prototype link inspection and notification recording; neither an external delivery channel nor a visitor-facing sink view is assumed.",
+    "No additional password policy, persistent account storage, sign-in behavior, or particular session mechanism is assumed.",
+    "The approved requirements use REQ-001 through REQ-018; their prior-stage output has no returned standalone source-reference locator, so identifiers are linked without a fabricated stage_output reference."
+  ],
+  "open_questions": [
+    {
+      "question": "What should the pictured Sign in button do, and what authentication failure behavior is intended?",
+      "blocking": false,
+      "context": "The wireframe shows an affordance but no navigation or authentication result; proposed validation does not define an authentication implementation."
+    },
+    {
+      "question": "What layout and copy should the reset-request, confirmation, new-password, completion, and invalid-link screens use?",
+      "blocking": false,
+      "context": "Only the sign-in screen is pictured; suggested recovery screens and retry paths remain proposals."
+    },
+    {
+      "question": "Should a request over the per-account limit receive distinguishable feedback, and if so how will account non-enumeration be preserved?",
+      "blocking": false,
+      "context": "The proposed default is a neutral visitor-facing response without exposing account existence or link issuance."
+    },
+    {
+      "question": "Are additional password rules or notification presentation requirements expected?",
+      "blocking": false,
+      "context": "No additional policy or external notification provider is established by the authorized evidence."
+    },
+    {
+      "question": "How should a test or demo inspect the in-memory reset link without exposing it to unauthenticated visitors?",
+      "blocking": false,
+      "context": "The notification sink is a prototype delivery mechanism, not a pictured inbox or visitor-facing page."
+    }
+  ],
+  "stage": "ui_analysis",
+  "applicability": "applicable",
+  "findings": [
+    {
+      "provenance": "Observed",
+      "statement": "The 480×360 white wireframe depicts a narrow dark-bordered sign-in panel centered horizontally, with a Sign in heading, a labeled Email address text field showing the name@example.com placeholder, a labeled Password field with a masked sample, a full-width dark Sign in button, and muted 'No account? Contact your administrator.' footer. This depicts content, not a functioning sign-in implementation.",
+      "source_references": [
+        {
+          "source_type": "attachment",
+          "source_id": "23b23ac1-a532-42fc-9973-51a1d4954aa6",
+          "locator": "sign-in-wireframe.png"
+        }
+      ],
+      "requirement_ids": ["REQ-001"]
+    },
+    {
+      "provenance": "Observed",
+      "statement": "A blue underlined 'Forgot password?' link appears below the password field. Only the visible recovery entry affordance is pictured; the wireframe does not show its destination or a working transition.",
+      "source_references": [
+        {
+          "source_type": "attachment",
+          "source_id": "23b23ac1-a532-42fc-9973-51a1d4954aa6",
+          "locator": "sign-in-wireframe.png"
+        }
+      ],
+      "requirement_ids": ["REQ-002"]
+    },
+    {
+      "provenance": "Proposed",
+      "statement": "Provide a server-rendered sign-in entry where the pictured Forgot password? control navigates to a reset-request page. Treat email and password as sign-in inputs; propose associated errors for empty fields and malformed email, a nondouble-submitting progress state, and an intelligible failure state. Sign-in authentication behavior beyond the link is unresolved, not observed.",
+      "source_references": [
+        {
+          "source_type": "attachment",
+          "source_id": "23b23ac1-a532-42fc-9973-51a1d4954aa6",
+          "locator": "sign-in-wireframe.png"
+        },
+        {
+          "source_type": "user_story",
+          "source_id": "user_story",
+          "locator": "characters 0-16000"
+        },
+        {
+          "source_type": "knowledge",
+          "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5",
+          "locator": "v1, chunk 0"
+        }
+      ],
+      "requirement_ids": ["REQ-001", "REQ-002", "REQ-015"]
+    },
+    {
+      "provenance": "Proposed",
+      "statement": "The unpictured server-rendered reset-request screen accepts an email account identifier and offers a submit action and route back to sign-in. Propose empty or malformed input errors before submission, neutral in-progress and retryable failure states, and no disclosure of whether an identifier is registered. The email identifier is inferred from the pictured sign-in field, not specified by a recovery mockup.",
+      "source_references": [
+        {
+          "source_type": "attachment",
+          "source_id": "23b23ac1-a532-42fc-9973-51a1d4954aa6",
+          "locator": "sign-in-wireframe.png"
+        },
+        {
+          "source_type": "user_story",
+          "source_id": "user_story",
+          "locator": "characters 0-16000"
+        },
+        {
+          "source_type": "knowledge",
+          "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5",
+          "locator": "v1, chunk 0"
+        }
+      ],
+      "requirement_ids": ["REQ-002", "REQ-003", "REQ-015"]
+    },
+    {
+      "provenance": "Proposed",
+      "statement": "The unpictured request-confirmation screen gives identical visitor-facing outcomes for equivalent requests for existing and nonexistent accounts; propose a neutral confirmation and retry route that do not reveal link issuance or sink contents. Treat an over-limit request without account-disclosing copy. This screen has no required input; propose neutral fallback for an absent result, announced in-flight transition if used, and a nondisclosing error/retry state.",
+      "source_references": [
+        {
+          "source_type": "knowledge",
+          "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5",
+          "locator": "v1, chunk 0"
+        },
+        {
+          "source_type": "user_story",
+          "source_id": "user_story",
+          "locator": "characters 0-16000"
+        }
+      ],
+      "requirement_ids": ["REQ-003", "REQ-004", "REQ-005", "REQ-015"]
+    },
+    {
+      "provenance": "Proposed",
+      "statement": "Behind reset-request and confirmation pages, enforce at most five link-issuing requests per synthetic account per hour; eligible requests record a reset link in the in-memory notification sink and unknown or over-limit requests do not issue another account link. This is backend/delivery behavior, not a pictured screen, visitor inbox, or observable proof of enforcement.",
+      "source_references": [
+        {
+          "source_type": "user_story",
+          "source_id": "user_story",
+          "locator": "characters 0-16000"
+        },
+        {
+          "source_type": "knowledge",
+          "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5",
+          "locator": "v1, chunk 0"
+        }
+      ],
+      "requirement_ids": ["REQ-003", "REQ-004", "REQ-005", "REQ-011", "REQ-012"]
+    },
+    {
+      "provenance": "Proposed",
+      "statement": "An eligible link obtained through the prototype sink opens an unpictured server-rendered new-password form with a labeled new-password field and submit action while the link is unused and strictly before its issue time plus 30 minutes. Propose an empty-field error, an announced submitting state that prevents duplicates, and a retryable processing error without claiming a password-strength policy or visually verified link validity.",
+      "source_references": [
+        {
+          "source_type": "user_story",
+          "source_id": "user_story",
+          "locator": "characters 0-16000"
+        },
+        {
+          "source_type": "knowledge",
+          "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5",
+          "locator": "v1, chunk 0"
+        }
+      ],
+      "requirement_ids": ["REQ-005", "REQ-006", "REQ-007", "REQ-008", "REQ-015"]
+    },
+    {
+      "provenance": "Proposed",
+      "statement": "For an invalid, already-used, or expired link (at or after issuance plus 30 minutes), prevent a second password change and show an unpictured invalid-link state with a route to request another link. Suggest a neutral fallback for absent state and announced loading only if navigation has an in-flight phase; explain inability to use the link without disclosing account data.",
+      "source_references": [
+        {
+          "source_type": "knowledge",
+          "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5",
+          "locator": "v1, chunk 0"
+        },
+        {
+          "source_type": "user_story",
+          "source_id": "user_story",
+          "locator": "characters 0-16000"
+        }
+      ],
+      "requirement_ids": ["REQ-006", "REQ-007", "REQ-015"]
+    },
+    {
+      "provenance": "Proposed",
+      "statement": "A successful valid reset replaces the old password once and transitions to an unpictured success screen with clear completion feedback and a proposed path to sign-in. The completion screen has no required input; propose a neutral fallback for missing result, announced transition if loading, and retry guidance for processing errors rather than false success. No post-reset sign-in behavior is established by the wireframe.",
+      "source_references": [
+        {
+          "source_type": "user_story",
+          "source_id": "user_story",
+          "locator": "characters 0-16000"
+        },
+        {
+          "source_type": "knowledge",
+          "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5",
+          "locator": "v1, chunk 0"
+        }
+      ],
+      "requirement_ids": ["REQ-006", "REQ-008", "REQ-015"]
+    },
+    {
+      "provenance": "Proposed",
+      "statement": "After every successful reset, invalidate all active sessions of that account and record an owner-addressed notification in the in-memory sink. These are background effects, not observed screen contents; the proposed completion screen need not expose session internals, the link, notification records, or a delivery provider.",
+      "source_references": [
+        {
+          "source_type": "knowledge",
+          "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5",
+          "locator": "v1, chunk 0"
+        },
+        {
+          "source_type": "user_story",
+          "source_id": "user_story",
+          "locator": "characters 0-16000"
+        }
+      ],
+      "requirement_ids": ["REQ-009", "REQ-010", "REQ-012"]
+    },
+    {
+      "provenance": "Proposed",
+      "statement": "For pictured and proposed screens, implement keyboard-operable controls, logical focus and visible focus indicators; programmatically associate labels and accessible names with inputs, links, and buttons; associate and announce errors, announce status changes, move focus to new confirmation/error headings, and verify text, control, and focus contrast including the pictured blue link and muted footer. Pictured visual labels and colors do not establish actual accessibility or contrast compliance.",
+      "source_references": [
+        {
+          "source_type": "attachment",
+          "source_id": "23b23ac1-a532-42fc-9973-51a1d4954aa6",
+          "locator": "sign-in-wireframe.png"
+        },
+        {
+          "source_type": "user_story",
+          "source_id": "user_story",
+          "locator": "characters 0-16000"
+        },
+        {
+          "source_type": "knowledge",
+          "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5",
+          "locator": "v1, chunk 0"
+        }
+      ],
+      "requirement_ids": ["REQ-001", "REQ-002", "REQ-003", "REQ-006", "REQ-015"]
+    },
+    {
+      "provenance": "Proposed",
+      "statement": "Technical and delivery constraints have no visually demonstrable coverage in the wireframe: use Python 3.12, Flask request handling and server-rendered sign-in/recovery pages; provide pytest coverage for the required reset behavior; document synthetic-account and in-memory-sink production limitations; do not deploy or add a deployment workflow. These need implementation, test, or documentation verification rather than screenshot assertions.",
+      "source_references": [
+        {
+          "source_type": "user_story",
+          "source_id": "user_story",
+          "locator": "characters 0-16000"
+        }
+      ],
+      "requirement_ids": ["REQ-011", "REQ-012", "REQ-013", "REQ-014", "REQ-015", "REQ-016", "REQ-017", "REQ-018"]
+    }
+  ],
+  "not_applicable_reason": null
+}
