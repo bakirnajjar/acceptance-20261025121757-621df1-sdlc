@@ -1,0 +1,228 @@
+{
+  "schema_version": "1.0",
+  "source_references": [
+    {
+      "source_type": "user_story",
+      "source_id": "user_story",
+      "locator": "characters 0-16000"
+    },
+    {
+      "source_type": "attachment",
+      "source_id": "23b23ac1-a532-42fc-9973-51a1d4954aa6",
+      "locator": "sign-in-wireframe.png"
+    },
+    {
+      "source_type": "knowledge",
+      "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5",
+      "locator": "v1, chunk 0"
+    }
+  ],
+  "assumptions": [
+    "These are prospective delivery risks, not observed defects: no implementation or test results were supplied, and priority measures the consequence of missing a requirement rather than measured likelihood.",
+    "The pictured email field supplies the reset account identifier. The image describes visible sign-in presentation only, not sign-in validation or recovery-page design.",
+    "Synthetic accounts and an in-memory notification sink are intentionally ephemeral prototype substitutes, not production account storage or external delivery.",
+    "Controlled time and multiple synthetic-account sessions may be established in tests; no particular session mechanism, persistence, password policy, or delivery provider is prescribed.",
+    "The approved requirements_analysis output defines REQ-001 through REQ-018, but the authorized prior-output response provides no independent source-reference locator. Requirement IDs are predecessor links, not invented stage_output citations."
+  ],
+  "open_questions": [
+    {
+      "question": "What sign-in behavior beyond the pictured form is expected?",
+      "blocking": false,
+      "context": "The image supports the visible panel and recovery link only; no authentication semantics are inferred."
+    },
+    {
+      "question": "Are additional recovery-page or notification presentation requirements expected?",
+      "blocking": false,
+      "context": "The flow and inspectable in-memory sink can be verified without inventing a recovery-page design or external delivery channel."
+    },
+    {
+      "question": "Is a particular session mechanism required?",
+      "blocking": false,
+      "context": "The acceptance check concerns invalidation of every active session, not its implementation."
+    },
+    {
+      "question": "Are additional account identifiers or password rules expected?",
+      "blocking": false,
+      "context": "Use the pictured email-address identifier; do not infer extra password policy."
+    },
+    {
+      "question": "Should a later separately authorized stage specify production storage or delivery?",
+      "blocking": false,
+      "context": "For this prototype, document the synthetic and in-memory limitations without adding production systems or deployment."
+    }
+  ],
+  "stage": "custom_document",
+  "stage_key": "acceptance_20261025121757_621df1_risk",
+  "summary": "Prospective risk register for the Python 3.12, Flask, server-rendered password-reset prototype. Twelve stable risks cover all approved REQ-001 through REQ-018, with consequence-based priorities and proposed acceptance verification; no implementation, tests, or deployment have been inspected.",
+  "sections": [
+    {
+      "heading": "Purpose and evidence limits",
+      "body": "This register describes possible delivery failures rather than actual defects or measured likelihood. The sign-in image is evidence for visible sign-in content only. The pinned story specifies the prototype stack, synthetic accounts, in-memory notification sink, documentation and no-deployment boundary; the curated standard ACC-STD-01 through ACC-STD-03 specifies recovery safeguards. Approved predecessor identifiers REQ-001 through REQ-018 link risks to requirements, not to proof of implementation. No standalone source-reference locator was returned for the predecessor output."
+    },
+    {
+      "heading": "Priority and verification approach",
+      "body": "Must marks a failure that would defeat a recovery/security guarantee or the explicit no-deployment prohibition; should marks a failure of visible experience, reproducible stack/test fit or honest prototype positioning. Each item states a potential impact and a future check, not a passed test. Verify with synthetic accounts, controlled time, Flask responses, multiple test sessions, pytest and the in-memory sink; do not require real accounts, external messaging, persistence or deployment."
+    },
+    {
+      "heading": "Coverage",
+      "body": "R7B43B-001 through R7B43B-012 collectively reference every approved requirement REQ-001 through REQ-018. Source references on each item point only to the pinned story, supplied image where its visible sign-in content is relevant, and curated recovery standard where its controls are relevant."
+    }
+  ],
+  "items": [
+    {
+      "id": "R7B43B-001",
+      "title": "Sign-in presentation or recovery entry drifts",
+      "description": "Potential failure: the server-rendered sign-in page omits or misrepresents the pictured narrow dark-bordered white panel, heading, labeled email input with name@example.com placeholder, masked labeled password field, blue underlined “Forgot password?” link, wide dark button or muted “No account? Contact your administrator.” footer; alternatively the link fails to reach a reset-request form. Impact: visitors cannot reliably start recovery and visible acceptance diverges. Mitigation/verification: inspect the rendered sign-in response for these elements, follow the link and submit an account identifier; cover the route and entry with pytest without inventing sign-in validation or recovery-page styling. Priority rationale: should, because visible fidelity and entry are required but the image supplies no broader authentication semantics.",
+      "category": "Sign-in and recovery entry",
+      "priority": "should",
+      "requirement_ids": ["REQ-001", "REQ-002", "REQ-015", "REQ-016"],
+      "related_ids": [],
+      "source_references": [
+        {"source_type": "user_story", "source_id": "user_story", "locator": "characters 0-16000"},
+        {"source_type": "attachment", "source_id": "23b23ac1-a532-42fc-9973-51a1d4954aa6", "locator": "sign-in-wireframe.png"}
+      ]
+    },
+    {
+      "id": "R7B43B-002",
+      "title": "Reset-request response enumerates accounts",
+      "description": "Potential failure: existing and unknown account identifiers receive distinguishable visitor-facing reset-request responses. Impact: an observer can learn account existence. Mitigation/verification: submit equivalent requests for a synthetic and an unknown identifier under the same conditions and assert identical visitor-facing content and status without account disclosure; inspect link issuance separately in the sink. Priority rationale: must, because differing responses directly defeat ACC-STD-01 non-enumeration.",
+      "category": "Request privacy",
+      "priority": "must",
+      "requirement_ids": ["REQ-003", "REQ-016"],
+      "related_ids": [],
+      "source_references": [
+        {"source_type": "user_story", "source_id": "user_story", "locator": "characters 0-16000"},
+        {"source_type": "knowledge", "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5", "locator": "v1, chunk 0"}
+      ]
+    },
+    {
+      "id": "R7B43B-003",
+      "title": "Per-account request limit can be bypassed",
+      "description": "Potential failure: a sixth request for one account within an hour issues another link, or requests remain blocked after the applicable hour elapses. Impact: abuse protection or legitimate recovery fails. Mitigation/verification: with controlled time, make five requests for one synthetic account, attempt a sixth inside the hour and confirm no sixth link in the sink; after that account's applicable period elapses, verify a new eligible request is allowed. Do not impose an unsupported global limit. Priority rationale: must, because violating five per account per hour defeats ACC-STD-01.",
+      "category": "Request abuse control",
+      "priority": "must",
+      "requirement_ids": ["REQ-004", "REQ-016"],
+      "related_ids": [],
+      "source_references": [
+        {"source_type": "user_story", "source_id": "user_story", "locator": "characters 0-16000"},
+        {"source_type": "knowledge", "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5", "locator": "v1, chunk 0"}
+      ]
+    },
+    {
+      "id": "R7B43B-004",
+      "title": "Eligible link is not issued into the prototype sink",
+      "description": "Potential failure: an eligible synthetic-account request creates no inspectable reset link, or an unknown identifier creates an account-specific link. Impact: recovery becomes unusable or the prototype crosses its account boundary. Mitigation/verification: inspect the in-memory notification sink after an eligible synthetic-account request for its link and after an unknown-account request for absence of an account-specific link; require no external delivery provider. Priority rationale: must, because an issued link is necessary to complete recovery and must remain account-scoped.",
+      "category": "Link issuance",
+      "priority": "must",
+      "requirement_ids": ["REQ-005", "REQ-011", "REQ-012", "REQ-016"],
+      "related_ids": [],
+      "source_references": [
+        {"source_type": "user_story", "source_id": "user_story", "locator": "characters 0-16000"},
+        {"source_type": "knowledge", "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5", "locator": "v1, chunk 0"}
+      ]
+    },
+    {
+      "id": "R7B43B-005",
+      "title": "Reset link is reusable",
+      "description": "Potential failure: a consumed link completes a second password change. Impact: replay remains possible after a legitimate reset. Mitigation/verification: complete one reset with an unexpired unused link, resubmit that same link and assert no second reset succeeds; visiting a link alone need not consume it. Priority rationale: must, because reuse directly violates ACC-STD-02 single-use protection.",
+      "category": "Link lifecycle",
+      "priority": "must",
+      "requirement_ids": ["REQ-006", "REQ-016"],
+      "related_ids": [],
+      "source_references": [
+        {"source_type": "user_story", "source_id": "user_story", "locator": "characters 0-16000"},
+        {"source_type": "knowledge", "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5", "locator": "v1, chunk 0"}
+      ]
+    },
+    {
+      "id": "R7B43B-006",
+      "title": "Expiry boundary is misinterpreted",
+      "description": "Potential failure: an unused link works at or after issuance plus 30 minutes, or expires before that instant. Impact: access persists too long or eligible recovery is blocked. Mitigation/verification: using controlled time and otherwise valid unused links, assert eligibility strictly before t+30 minutes and rejection exactly at t+30 minutes and afterward. Priority rationale: must, because the exclusive 30-minute boundary is an ACC-STD-02 security and acceptance condition.",
+      "category": "Link lifecycle",
+      "priority": "must",
+      "requirement_ids": ["REQ-007", "REQ-016"],
+      "related_ids": [],
+      "source_references": [
+        {"source_type": "user_story", "source_id": "user_story", "locator": "characters 0-16000"},
+        {"source_type": "knowledge", "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5", "locator": "v1, chunk 0"}
+      ]
+    },
+    {
+      "id": "R7B43B-007",
+      "title": "Password replacement does not take effect",
+      "description": "Potential failure: a successful reset leaves the old credential usable or does not accept the submitted new credential. Impact: the account is not actually recovered. Mitigation/verification: for a synthetic account with a valid unused link, complete a reset and verify the new password is accepted and the previous password is not; add no unsupported password policy. Priority rationale: must, because this defeats the central recovery outcome.",
+      "category": "Completion side effects",
+      "priority": "must",
+      "requirement_ids": ["REQ-008", "REQ-016"],
+      "related_ids": [],
+      "source_references": [
+        {"source_type": "user_story", "source_id": "user_story", "locator": "characters 0-16000"},
+        {"source_type": "knowledge", "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5", "locator": "v1, chunk 0"}
+      ]
+    },
+    {
+      "id": "R7B43B-008",
+      "title": "Some active sessions survive a reset",
+      "description": "Potential failure: reset invalidates only the current session or one device. Impact: other authenticated sessions for the account remain usable after password replacement. Mitigation/verification: establish multiple active sessions for a synthetic account and, after its successful reset, assert none remains authenticated; prescribe no session technology. Priority rationale: must, because remaining sessions break ACC-STD-02 all-session sign-out.",
+      "category": "Completion side effects",
+      "priority": "must",
+      "requirement_ids": ["REQ-009", "REQ-016"],
+      "related_ids": [],
+      "source_references": [
+        {"source_type": "user_story", "source_id": "user_story", "locator": "characters 0-16000"},
+        {"source_type": "knowledge", "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5", "locator": "v1, chunk 0"}
+      ]
+    },
+    {
+      "id": "R7B43B-009",
+      "title": "Owner notification is omitted or misaddressed",
+      "description": "Potential failure: a successful reset produces no notification for the owner, or records one for another account. Impact: the owner loses required awareness of the change. Mitigation/verification: after every successful synthetic-account reset, inspect the in-memory sink for a corresponding owner-addressed successful-reset notification; do not assume external messaging. Priority rationale: must, because omission or misaddressing breaks ACC-STD-03.",
+      "category": "Completion side effects",
+      "priority": "must",
+      "requirement_ids": ["REQ-010", "REQ-012", "REQ-016"],
+      "related_ids": [],
+      "source_references": [
+        {"source_type": "user_story", "source_id": "user_story", "locator": "characters 0-16000"},
+        {"source_type": "knowledge", "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5", "locator": "v1, chunk 0"}
+      ]
+    },
+    {
+      "id": "R7B43B-010",
+      "title": "Runtime, routing, rendering, or tests are incompatible",
+      "description": "Potential failure: the application or tests do not run under Python 3.12; Flask does not handle sign-in and recovery routes; page content requires client rendering; or pytest omits specified scenarios. Impact: acceptance cannot be reproduced in the required stack. Mitigation/verification: start the application and pytest on Python 3.12 with declared dependencies, request the routes through Flask and inspect server responses for page content; ensure pytest exercises the pictured entry, non-enumeration, per-account limit, issuance, replay, expiry, credential replacement, all-session sign-out and owner notification. Priority rationale: should, because testability and stack fit are required while specific security-behavior failures are already separately prioritized.",
+      "category": "Runtime and verification",
+      "priority": "should",
+      "requirement_ids": ["REQ-013", "REQ-014", "REQ-015", "REQ-016"],
+      "related_ids": [],
+      "source_references": [
+        {"source_type": "user_story", "source_id": "user_story", "locator": "characters 0-16000"},
+        {"source_type": "attachment", "source_id": "23b23ac1-a532-42fc-9973-51a1d4954aa6", "locator": "sign-in-wireframe.png"},
+        {"source_type": "knowledge", "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5", "locator": "v1, chunk 0"}
+      ]
+    },
+    {
+      "id": "R7B43B-011",
+      "title": "Prototype boundaries are mistaken for production readiness",
+      "description": "Potential failure: real accounts or external delivery are used instead of synthetic accounts and an in-memory sink, or documentation omits that these ephemeral substitutes are unsuitable for production. Impact: readiness is overstated and tests may depend on real services. Mitigation/verification: exercise only synthetic accounts, inspect sink records without external delivery, and document both substitutes as production limitations without treating them as deployable equivalents. Priority rationale: should, because honest prototype positioning and reproducibility are required but no production architecture is requested.",
+      "category": "Prototype boundaries",
+      "priority": "should",
+      "requirement_ids": ["REQ-011", "REQ-012", "REQ-017"],
+      "related_ids": [],
+      "source_references": [
+        {"source_type": "user_story", "source_id": "user_story", "locator": "characters 0-16000"}
+      ]
+    },
+    {
+      "id": "R7B43B-012",
+      "title": "Deployment slips into prototype scope",
+      "description": "Potential failure: a deployment action or deployment workflow is introduced despite the explicit no-deployment boundary. Impact: the prototype is exposed beyond its authorized scope. Mitigation/verification: inspect resulting changes and workflow files for absence of deployment additions and perform no deployment; keep production-gap documentation descriptive. Priority rationale: must, because deployment violates an explicit prohibition independent of feature completeness.",
+      "category": "Scope containment",
+      "priority": "must",
+      "requirement_ids": ["REQ-017", "REQ-018"],
+      "related_ids": [],
+      "source_references": [
+        {"source_type": "user_story", "source_id": "user_story", "locator": "characters 0-16000"}
+      ]
+    }
+  ]
+}

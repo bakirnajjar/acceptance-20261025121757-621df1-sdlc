@@ -1,0 +1,178 @@
+{
+  "schema_version": "1.1",
+  "stage": "solution_design",
+  "source_references": [
+    {"source_type": "user_story", "source_id": "user_story", "locator": "characters 0-16000"},
+    {"source_type": "attachment", "source_id": "23b23ac1-a532-42fc-9973-51a1d4954aa6", "locator": "sign-in-wireframe.png"},
+    {"source_type": "knowledge", "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5", "locator": "v1, chunk 0"}
+  ],
+  "assumptions": [
+    "The pictured email address is the identifier of a synthetic account in the proposed recovery form; no separate identity policy is established.",
+    "Only the sign-in presentation and visible recovery affordance are observed in the wireframe. Functional sign-in, recovery-page layouts, accessibility behavior and password rules beyond a nonempty submitted password are proposed choices, not observations.",
+    "One application process owns the ephemeral accounts, grants, issuance ledger, sessions and private notification sink; an injected aware-UTC clock and isolated app instances make acceptance tests deterministic.",
+    "Minimal synthetic password-verifying sign-in and a guarded demonstration page are proposed only to make the required all-session sign-out testable, not as an approved general authentication product.",
+    "Approved predecessor outputs define REQ-001 through REQ-018 but supplied no standalone source-reference locator; their identifiers are predecessor links, not fabricated stage_output citations. The prospective risk register reports potential failures, not defects."
+  ],
+  "open_questions": [
+    {"question": "What should the pictured Sign in button do beyond a minimal synthetic-session demonstration?", "blocking": false, "context": "The image specifies visible controls only; this design proposes limited authentication to exercise REQ-009."},
+    {"question": "Are specific layouts or copy required for the unpictured request, confirmation, reset and invalid-link pages?", "blocking": false, "context": "Server-rendered accessible states are proposed, not observed."},
+    {"question": "Are a stricter password policy or a particular session mechanism required later?", "blocking": false, "context": "Neither was prescribed; do not treat the prototype choices as production policy."},
+    {"question": "Should a future production stage specify durable accounts, shared quotas, external owner delivery and a secure authorized link-inspection procedure?", "blocking": false, "context": "Current scope uses synthetic accounts and a test-injected private sink, with no public inspection route or deployment."}
+  ],
+  "architecture_summary": "Proposed single-process Python 3.12 Flask/Jinja prototype: an app factory injects an aware-UTC clock, synthetic account store, guarded in-memory state and private notification sink; Flask routes render HTML without client rendering. Only the pictured sign-in panel and Forgot password? affordance are observed; limited synthetic sign-in with server-side opaque sessions and a guarded demonstration page is proposed solely to test all-session revocation. Proposed HTTP contracts: GET/POST /sign-in renders/handles synthetic credentials; GET/POST /forgot-password renders a labeled email form and sends equivalent valid known, unknown and over-limit requests to the same neutral confirmation (status, redirect, body and account-independent headers); GET/POST /reset/<token> checks a link without consuming it on GET, then rechecks and completes only on protected POST; GET /reset/complete provides token-free, success-gated guidance. No public token/sink inspection route. The request service normalizes email and, under one process-local lock, keeps accepted issuance times per existing account in a rolling hour; it allows five, prunes times at or before now minus one hour, and records an unpredictable reset URL only in the private sink for eligible accounts. Store only the token digest and UTC issue time in grant state. The completion service requires an unused grant and now strictly before issue time plus 30 minutes; after hashing the submitted password, it rechecks under the lock and atomically consumes the grant, replaces the salted account password hash, advances account session generation (every old session fails its guard) and appends exactly one owner-addressed sink notice before reporting success. Separate clients and concurrent replay are tested with injected clocks; GET never consumes the grant. Proposed security protections include CSRF-checked POSTs, HttpOnly opaque session cookies, a fixed configured link origin rather than Host, no third-party assets on token pages, no-referrer/no-store token responses, and redaction of tokens, email and credentials from logs. Neutral visitor responses do not promise constant-time request processing; process-local controls are not production abuse prevention. Record non-identifying counts for issuance, suppression, rejected completions and success, plus redacted internal errors; keep sink inspection in test injection only. No database, migration, external delivery, real account, cross-worker transaction, deployment or workflow is in scope; restart loses all state and a future production design needs separately authorized durable/shared state, migration and delivery. Decisions and alternatives: Flask/Jinja with local state over SPA/API plus database because the story requires server rendering and synthetic/in-memory boundaries; rolling accepted-issuance ledger over fixed-hour buckets for exact boundary behavior; opaque digest-backed secret over plaintext or stateless tokens for one-time consumption; server-side generation-checked sessions over client-only cookies or revoking one cookie to invalidate every session; guarded notice append over asynchronous external delivery so every reported prototype success has a sink record; fixed-origin private links over Host-derived links or public debug endpoints to avoid leaking secrets. These are proposals, not implementation or passing-test claims.",
+  "tech_stack": {
+    "languages": ["Python 3.12"],
+    "frameworks": ["Flask", "Jinja", "pytest"],
+    "runtime": "Python 3.12",
+    "package_manager": "pip"
+  },
+  "hosting": {"kind": "none", "notes": "Undeployed single-process local prototype; no hosting configuration or deployment workflow."},
+  "quality_gates": {"build": [], "test": ["python3.12 -m pytest -q"], "lint": []},
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "title": "Python/Flask synthetic-state foundation",
+      "description": "Declare Python 3.12 Flask/pytest dependencies and create a Flask app factory with injected aware-UTC clock, isolated synthetic accounts, guarded single-process state and a private in-memory notification sink. Define account, grant, issuance-ledger, session and notification records/interfaces for dependent tasks; no real accounts, database or external delivery.",
+      "requirement_ids": ["REQ-011", "REQ-012", "REQ-013", "REQ-014"],
+      "acceptance_criteria": [
+        "With declared dependencies under Python 3.12, Flask starts and accepts a request; pytest can construct two app instances with independent accounts, clocks, stores and sinks.",
+        "Accounts are explicitly synthetic and test fixtures can inspect injected sink records without an external delivery service or HTTP inspection endpoint.",
+        "The state interface supports guarded, single-process atomic issuance and completion updates without a durability or multi-worker claim."
+      ],
+      "depends_on": [],
+      "source_references": [{"source_type": "user_story", "source_id": "user_story", "locator": "characters 0-16000"}]
+    },
+    {
+      "id": "TASK-002",
+      "title": "Pictured sign-in and session guard",
+      "description": "Server-render the pictured sign-in and working recovery entry. Propose minimal synthetic-account password verification, opaque server-side sessions, protected form mutations and an authenticated demonstration guard so separate clients can establish sessions; check account session generation on every guarded request. This sign-in behavior is a testing mechanism, not an observed wireframe requirement.",
+      "requirement_ids": ["REQ-001", "REQ-002", "REQ-009", "REQ-015"],
+      "acceptance_criteria": [
+        "HTML presents a narrow dark-bordered panel on white, bold Sign in heading, labeled Email address with name@example.com placeholder, labeled masked Password input, blue underlined Forgot password? link, wide dark Sign in button and muted No account? Contact your administrator. footer.",
+        "The recovery link reaches a server-rendered request entry without requiring client-side rendering.",
+        "Two independent clients can establish distinct guarded sessions for one synthetic account; the guard checks server-side validity and generation each time, rejects revoked sessions, and never grants a session for invalid credentials."
+      ],
+      "depends_on": ["TASK-001"],
+      "source_references": [
+        {"source_type": "user_story", "source_id": "user_story", "locator": "characters 0-16000"},
+        {"source_type": "attachment", "source_id": "23b23ac1-a532-42fc-9973-51a1d4954aa6", "locator": "sign-in-wireframe.png"},
+        {"source_type": "knowledge", "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5", "locator": "v1, chunk 0"}
+      ]
+    },
+    {
+      "id": "TASK-003",
+      "title": "Private request and link-issuance service",
+      "description": "Normalize email consistently for synthetic lookup; under one lock keep a rolling-hour accepted-issuance ledger per existing account. Eligible requests create an unpredictable opaque secret, store its digest and UTC issue time, and append a fixed-origin reset URL solely to the private sink. Unknown or over-limit requests issue nothing; service outcomes do not disclose which case occurred.",
+      "requirement_ids": ["REQ-003", "REQ-004", "REQ-005", "REQ-011", "REQ-012"],
+      "acceptance_criteria": [
+        "Five eligible requests for one account within a rolling hour yield five owner-addressed links; a sixth yields none, and another request at the oldest issue time plus one hour is eligible.",
+        "An unknown email yields no account-specific link; different synthetic accounts have independent ledgers.",
+        "Grant state holds only token digest, account ID and UTC issue time, while only the private sink has test-inspectable URLs; no caller-facing outcome reveals existence, quota or secret."
+      ],
+      "depends_on": ["TASK-001"],
+      "source_references": [
+        {"source_type": "user_story", "source_id": "user_story", "locator": "characters 0-16000"},
+        {"source_type": "knowledge", "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5", "locator": "v1, chunk 0"}
+      ]
+    },
+    {
+      "id": "TASK-004",
+      "title": "Request form and neutral HTTP result",
+      "description": "Add Flask/Jinja email-request and neutral-confirmation pages with proposed accessible labels and return route. Protected POST delegates to TASK-003; valid-form known, unknown and over-limit submissions have the same visitor-facing result. Keep tokens, sink contents and account-specific quota feedback private. Recovery-page appearance is proposed, not pictured.",
+      "requirement_ids": ["REQ-002", "REQ-003", "REQ-004", "REQ-015"],
+      "acceptance_criteria": [
+        "Following the pictured link reaches a server-rendered request page where a visitor can submit an email identifier via CSRF-checked POST.",
+        "Equivalent valid known, unknown and over-limit submissions have identical visitor-facing status, redirect, final body and account-independent headers, with no existence, issue or sink disclosure.",
+        "The neutral confirmation needs no client renderer; invalid form or CSRF handling does not disclose account existence."
+      ],
+      "depends_on": ["TASK-002", "TASK-003"],
+      "source_references": [
+        {"source_type": "user_story", "source_id": "user_story", "locator": "characters 0-16000"},
+        {"source_type": "attachment", "source_id": "23b23ac1-a532-42fc-9973-51a1d4954aa6", "locator": "sign-in-wireframe.png"},
+        {"source_type": "knowledge", "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5", "locator": "v1, chunk 0"}
+      ]
+    },
+    {
+      "id": "TASK-005",
+      "title": "One-time reset transaction and all-session revocation",
+      "description": "Validate digest and injected UTC time; hash a nonempty submitted replacement before locking, then recheck eligibility within one guarded in-memory transition. Consume grant, replace salted password hash, advance session generation for every active client and append exactly one owner-addressed success notice before reporting success. An append/update failure cannot be reported as success; visiting a link never consumes it.",
+      "requirement_ids": ["REQ-006", "REQ-007", "REQ-008", "REQ-009", "REQ-010", "REQ-012"],
+      "acceptance_criteria": [
+        "An unused link works strictly before issuance plus 30 minutes at most once; repeated and concurrent replay cannot complete a second reset.",
+        "At exactly issuance plus 30 minutes and later, completion fails without password, session-generation or notice changes.",
+        "After success, old password verification fails, new password verification succeeds, and every previously authenticated client for the account fails its guard.",
+        "Every reported success records exactly one owner-addressed notice with no token or password; invalid, expired and replayed attempts produce no success notice."
+      ],
+      "depends_on": ["TASK-002", "TASK-003"],
+      "source_references": [
+        {"source_type": "user_story", "source_id": "user_story", "locator": "characters 0-16000"},
+        {"source_type": "knowledge", "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5", "locator": "v1, chunk 0"}
+      ]
+    },
+    {
+      "id": "TASK-006",
+      "title": "Server-rendered link, error and completion states",
+      "description": "Add proposed server-rendered new-password, invalid/used/expired-link and completion states with accessible labels and routes back to request/sign-in. GET checks without consuming; protected POST revalidates then calls TASK-005 and redirects to token-free, success-gated guidance. Generate URLs from a configured origin; suppress token-bearing page caching, referrers and third-party resources. No recovery layout is observed.",
+      "requirement_ids": ["REQ-005", "REQ-006", "REQ-007", "REQ-008", "REQ-015"],
+      "acceptance_criteria": [
+        "An unused valid link renders a labeled new-password form without consumption; invalid, used and expired links show generic unusable guidance and a new-request path.",
+        "A valid protected POST can complete once and redirect to a token-free completion URL; invalid/expired/replayed POSTs neither report success nor mutate credentials.",
+        "Direct completion access does not falsely assert success; pages disclose no sink, account-specific grant or password and token-bearing pages prevent cache/referrer leakage."
+      ],
+      "depends_on": ["TASK-004", "TASK-005"],
+      "source_references": [
+        {"source_type": "user_story", "source_id": "user_story", "locator": "characters 0-16000"},
+        {"source_type": "knowledge", "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5", "locator": "v1, chunk 0"}
+      ]
+    },
+    {
+      "id": "TASK-007",
+      "title": "Automated entry and request-flow verification",
+      "description": "Add Python 3.12 pytest fixtures and Flask-client tests for pictured HTML and navigation, synthetic/in-memory boundaries, neutral visitor HTTP behavior, private issuance and rolling-hour boundary. Compare sink state separately from visitor responses; inject time and isolate app factories instead of sleeping or exposing a public sink.",
+      "requirement_ids": ["REQ-001", "REQ-002", "REQ-003", "REQ-004", "REQ-005", "REQ-011", "REQ-012", "REQ-013", "REQ-014", "REQ-015", "REQ-016"],
+      "acceptance_criteria": [
+        "Pytest under Python 3.12 verifies Flask-served pictured sign-in HTML and navigation to a server-rendered request form without JavaScript.",
+        "Tests compare status, redirects, final bodies and account-independent headers for equivalent valid known, unknown and over-limit submissions while separately checking eligible private-sink links and no unknown-account link.",
+        "Clock-injected tests prove five accepted links, blocked sixth, independent account quotas and renewed eligibility at oldest issue time plus one hour.",
+        "Fixtures use synthetic accounts and an in-memory sink only; fresh app instances have no prior account, quota or notification state."
+      ],
+      "depends_on": ["TASK-006"],
+      "source_references": [
+        {"source_type": "user_story", "source_id": "user_story", "locator": "characters 0-16000"},
+        {"source_type": "attachment", "source_id": "23b23ac1-a532-42fc-9973-51a1d4954aa6", "locator": "sign-in-wireframe.png"},
+        {"source_type": "knowledge", "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5", "locator": "v1, chunk 0"}
+      ]
+    },
+    {
+      "id": "TASK-008",
+      "title": "Automated reset and session verification",
+      "description": "Add separate pytest/Flask-client tests for link lifecycle, atomic replay protection, credential replacement, cross-client sign-out, owner notice and server-rendered error/success states. Inject aware-UTC time, inspect only private sink fixtures and use at least two independent authenticated clients; together with TASK-007 cover every REQ-016 scenario.",
+      "requirement_ids": ["REQ-006", "REQ-007", "REQ-008", "REQ-009", "REQ-010", "REQ-012", "REQ-015", "REQ-016"],
+      "acceptance_criteria": [
+        "Tests exercise unused links immediately before, exactly at and after the 30-minute expiry boundary; GET leaves a grant unused and POST checks validity again.",
+        "Tests prove one completion per link, sequential and concurrent replay rejection with no second credential change or notice, and old password rejected/new password accepted.",
+        "Tests establish multiple independent clients for one account; after reset every old session fails its guard, exactly one owner-addressed notice exists per success, and failures produce none.",
+        "Tests inspect server-rendered invalid/used/expired and token-free completion states without a public sink or client-visible link. With TASK-007, pytest covers pictured entry, neutral response, per-account limit, issuance, single use, expiry, password replacement, every-session sign-out and owner notice."
+      ],
+      "depends_on": ["TASK-006"],
+      "source_references": [
+        {"source_type": "user_story", "source_id": "user_story", "locator": "characters 0-16000"},
+        {"source_type": "knowledge", "source_id": "bcf198d8-a628-401c-8641-b726fcbd00b5", "locator": "v1, chunk 0"}
+      ]
+    },
+    {
+      "id": "TASK-009",
+      "title": "Document limitations and verify non-deployment scope",
+      "description": "Document synthetic identities, process-local accounts/grants/quotas/sessions, in-memory-only notices and absence of real delivery or production readiness. Perform a read-only scope inspection for deployment changes; do not deploy, create workflow files or present rollout instructions as authorized.",
+      "requirement_ids": ["REQ-017", "REQ-018"],
+      "acceptance_criteria": [
+        "Project documentation identifies synthetic accounts and private in-memory notifications as unsuitable production substitutes and explains restart/multi-worker state loss and absent real delivery.",
+        "Inspection of delivered changes and workflow files finds no deployment workflow added, and no deployment action was performed.",
+        "The scope-check result describes inspection only, not production infrastructure or a deployed application."
+      ],
+      "depends_on": ["TASK-007", "TASK-008"],
+      "source_references": [{"source_type": "user_story", "source_id": "user_story", "locator": "characters 0-16000"}]
+    }
+  ],
+  "coverage_dispositions": []
+}
